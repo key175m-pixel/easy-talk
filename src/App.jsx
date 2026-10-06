@@ -1,11 +1,13 @@
 import './App.css'
 import Login from './Login';
+import { useState } from 'react';
 
 function App() {
+  const [screen, setScreen] = useState('login');
   return (
    <div>
-     <h1>Easy Talk</h1>
-     <Login />
+   {screen ===  'login' ? <Login onLogin={() => setScreen('profile')} /> : <h1>Profile</h1>}
+
    </div>
   );
 }

@@ -15,4 +15,11 @@ setError('');
 onLogin();
 }
 return (
- <form onSubmit={handleSubmit}> <input value={email} onChange={e => setEmail(e.target.value)} /> <input value={password} type="password" onChange={e => setPassword(e.target.value)} /> <button type="submit">Log in</button> {error && <p>{error}</p>} </form> ); } export default Login;
+<form onSubmit={handleSubmit}> 
+<input value={email} onChange={e => setEmail(e.target.value)} />
+<input value={password} type="password" onChange={e => setPassword(e.target.value)} />
+<button type="submit">Log in</button>
+{error && <p>{error}</p>} 
+</form> ); 
+} 
+ export default Login;

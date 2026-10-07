@@ -18,12 +18,14 @@ const [nameChannel, setNameChannel] = useState('');
     e.preventDefault();
     const newServer = {id: Date.now(), name: nameServer}; 
     setServers([...servers, newServer]);
+    setServerPick(newServer.id);
     setNameServer('');
 }
         function handleAddChannel(e) {
     e.preventDefault();
     const newChannel = {id: Date.now(), name: nameChannel}; 
     setChannels([...channels, newChannel]);
+    setChannelPick(newChannel.id);
     setNameChannel('');
 }
     return (

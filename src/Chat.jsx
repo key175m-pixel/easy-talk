@@ -2,28 +2,33 @@ import { useState } from 'react';
 // eliminate the check after CSS is done
 function Chat( { user }) {
     const [channels, setChannels] = useState([
-    {id: 1, name: 'channel 1' },
-    {id: 2, name: 'channel 2' }
+    {id: 1, name: 'channel 1', serverId: 1 },
+    {id: 2, name: 'channel 2', serverId: 2 }
 ]);
         const [servers, setServers] = useState([
-    {id: 1, name: 'server 1' },
-    {id: 2, name: 'server 2' }
+    {id: 1, name: 'server 1', },
+    {id: 2, name: 'server 2', }
 ]);
 const [nameServer, setNameServer] = useState(''); 
 const [nameChannel, setNameChannel] = useState(''); 
         const [serverPick, setServerPick] = useState(1);
         const [channelPick, setChannelPick] = useState(1);
         const found = channels.find(channel => channel.id === channelPick);
+        const channelsOfServer = channels.filter(channel => channel.serverId === serverPick);
         function handleAddServer(e) {
     e.preventDefault();
-    const newServer = {id: Date.now(), name: nameServer}; 
+    const cleanNameServer = nameServer.trim();
+    if (!cleanNameServer) return;
+    const newServer = {id: Date.now(), name: cleanNameServer}; 
     setServers([...servers, newServer]);
     setServerPick(newServer.id);
     setNameServer('');
 }
         function handleAddChannel(e) {
     e.preventDefault();
-    const newChannel = {id: Date.now(), name: nameChannel}; 
+    const cleanNameChannel = nameChannel.trim();
+    if (!cleanNameChannel) return;
+    const newChannel = {id: Date.now(), name: cleanNameChannel, serverId: serverPick}; 
     setChannels([...channels, newChannel]);
     setChannelPick(newChannel.id);
     setNameChannel('');
@@ -45,7 +50,7 @@ const [nameChannel, setNameChannel] = useState('');
             </ul>
             <h2>List of channels</h2>
             <ul>
-                {channels.map((channel) => (<li key={channel.id}><button onClick={() => setChannelPick(channel.id)}> {channel.name} {channel.id === channelPick && '✓'}</button></li>))}
+                {channelsOfServer.map((channel) => (<li key={channel.id}><button onClick={() => setChannelPick(channel.id)}> {channel.name} {channel.id === channelPick && '✓'}</button></li>))}
             </ul>
             <p>Selected channel: {found?.name} </p>
         </div>

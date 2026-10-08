@@ -15,6 +15,12 @@ const [nameChannel, setNameChannel] = useState('');
         const [channelPick, setChannelPick] = useState(1);
         const found = channels.find(channel => channel.id === channelPick);
         const channelsOfServer = channels.filter(channel => channel.serverId === serverPick);
+        const [messages, setMessages] = useState([
+{ id: 1, text: 'hi', author: 'Elena', channelId: 1 },
+{id: 2, text:'wsp!', author:'Ronny', channelId: 1},
+{id: 3, text:'hello!', author: 'kenneth', channelId: 2}
+]);
+  const messagesOfChannel = messages.filter(message => message.channelId === channelPick);
         function handleAddServer(e) {
     e.preventDefault();
     const cleanNameServer = nameServer.trim();
@@ -35,6 +41,7 @@ const [nameChannel, setNameChannel] = useState('');
 }
 function handlePickServer(id) {
   setServerPick(id);
+  setChannelPick(null)
   const firstChannel = channels.find(channel => channel.serverId === id);
   setChannelPick(firstChannel?.id);
 }
@@ -57,6 +64,7 @@ function handlePickServer(id) {
             <ul>
                 {channelsOfServer.map((channel) => (<li key={channel.id}><button onClick={() => setChannelPick(channel.id)}> {channel.name} {channel.id === channelPick && '✓'}</button></li>))}
             </ul>
+            <ul> {messagesOfChannel.map((message) => ( <li key={message.id}>{message.author}: {message.text}</li> ))} </ul>
             <p>Selected channel: {found?.name} </p>
         </div>
     )

@@ -33,6 +33,11 @@ const [nameChannel, setNameChannel] = useState('');
     setChannelPick(newChannel.id);
     setNameChannel('');
 }
+function handlePickServer(id) {
+  setServerPick(id);
+  const firstChannel = channels.find(channel => channel.serverId === id);
+  setChannelPick(firstChannel?.id);
+}
     return (
         <div>
             <h3>Welcome, {user}</h3>
@@ -46,7 +51,7 @@ const [nameChannel, setNameChannel] = useState('');
                 <button type="submit">Add Channel</button>
             </form>
             <ul>
-                {servers.map((server) => (<li key={server.id}><button onClick={() => setServerPick(server.id)}> {server.name} {server.id === serverPick && '✓'}</button></li>))} 
+                {servers.map((server) => (<li key={server.id}><button onClick={() => handlePickServer(server.id)}> {server.name} {server.id === serverPick && '✓'}</button></li>))} 
             </ul>
             <h2>List of channels</h2>
             <ul>

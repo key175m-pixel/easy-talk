@@ -21,8 +21,18 @@ const [nameChannel, setNameChannel] = useState('');
 {id: 3, text:'hello!', author: 'kenneth', channelId: 2}
 ]);
   const messagesOfChannel = messages.filter(message => message.channelId === channelPick);
-        function handleAddServer(e) {
+  const [newMessage, setNewMessage] = useState(''); 
+  function handleAddMessage(e) {
     e.preventDefault();
+    const cleanMessage = newMessage.trim();
+    if (!cleanMessage) return;
+    const newMsg = {id: Date.now(), text: cleanMessage, author: user, channelId: channelPick};
+    setMessages([...messages, newMsg]);
+    setNewMessage('');
+  }
+        function handleAddServer(e) {
+        setChannelPick(null)
+        e.preventDefault();
     const cleanNameServer = nameServer.trim();
     if (!cleanNameServer) return;
     const newServer = {id: Date.now(), name: cleanNameServer}; 
@@ -41,7 +51,6 @@ const [nameChannel, setNameChannel] = useState('');
 }
 function handlePickServer(id) {
   setServerPick(id);
-  setChannelPick(null)
   const firstChannel = channels.find(channel => channel.serverId === id);
   setChannelPick(firstChannel?.id);
 }
@@ -65,6 +74,10 @@ function handlePickServer(id) {
                 {channelsOfServer.map((channel) => (<li key={channel.id}><button onClick={() => setChannelPick(channel.id)}> {channel.name} {channel.id === channelPick && '✓'}</button></li>))}
             </ul>
             <ul> {messagesOfChannel.map((message) => ( <li key={message.id}>{message.author}: {message.text}</li> ))} </ul>
+            <form onSubmit={handleAddMessage}>
+                <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="Say something"/>
+                <button type="submit">send</button>
+                </form>
             <p>Selected channel: {found?.name} </p>
         </div>
     )

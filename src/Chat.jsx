@@ -25,18 +25,18 @@ const [nameChannel, setNameChannel] = useState('');
   function handleAddMessage(e) {
     e.preventDefault();
     const cleanMessage = newMessage.trim();
-    if (!cleanMessage) return;
+    if (!cleanMessage || !channelPick) return;
     const newMsg = {id: Date.now(), text: cleanMessage, author: user, channelId: channelPick};
     setMessages([...messages, newMsg]);
     setNewMessage('');
   }
         function handleAddServer(e) {
-        setChannelPick(null)
         e.preventDefault();
     const cleanNameServer = nameServer.trim();
     if (!cleanNameServer) return;
     const newServer = {id: Date.now(), name: cleanNameServer}; 
     setServers([...servers, newServer]);
+     setChannelPick(null)
     setServerPick(newServer.id);
     setNameServer('');
 }

@@ -5,7 +5,7 @@ import Chat from './Chat';
 import { useState } from 'react';
 // ALL: change after finishing chat part state of screen and user
 function App() {
-  const [screen, setScreen] = useState('chat');
+  const [screen, setScreen] = useState('login');
   const [user, setUser] = useState('key');
   return (
    <div>

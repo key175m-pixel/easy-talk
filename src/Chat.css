@@ -1,0 +1,152 @@
+/* Chat screen. One idea: whatever you have selected is drawn like a selected object, a thin blue frame with four
+   square handles, the same mark as the login stage. Everything else stays quiet: type, one hairline, a dot-grid floor.
+   Colors come from the tokens in index.css, so light and dark follow the rest of the app. */
+.app {
+  --rail: #0d0f12;
+  --sel: #5b9bff;
+  --hover: color-mix(in srgb, var(--fg) 6%, transparent);
+  display: grid; grid-template-columns: 72px 232px 1fr; height: 100vh; height: 100dvh; overflow: hidden;
+  background: var(--bg); color: var(--fg);
+}
+:where(.app ul) { list-style: none; margin: 0; padding: 0; }
+:where(.app button, .app input) { font: inherit; }
+:where(.app button) { cursor: pointer; border: 0; }
+.app button:focus-visible, .app input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* The selection mark: add .selected to anything. The frame is an outline, the handles are the two pseudo-elements. */
+.selected { position: relative; outline: 1.5px solid var(--sel); outline-offset: 0; }
+.selected::before, .selected::after {
+  content: ""; position: absolute; left: -4.5px; right: -4.5px; height: 9px; pointer-events: none;
+  background:
+    linear-gradient(#fff, #fff) left 1.5px top 1.5px / 6px 6px no-repeat,
+    linear-gradient(var(--sel), var(--sel)) left top / 9px 9px no-repeat,
+    linear-gradient(#fff, #fff) right 1.5px top 1.5px / 6px 6px no-repeat,
+    linear-gradient(var(--sel), var(--sel)) right top / 9px 9px no-repeat;
+  animation: grab .38s cubic-bezier(.2, .9, .3, 1.4);
+}
+.selected::before { top: -4.5px; }
+.selected::after { bottom: -4.5px; }
+@keyframes grab { from { transform: scale(1.5); opacity: 0; } }
+
+/* ---------- 1. Servers: square tiles on ink ---------- */
+.servers { position: relative; z-index: 6; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 18px 0; background: var(--rail); }
+.servers ul { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; min-height: 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; flex: 0 1 auto; padding: 6px 0; }
+.server {
+  width: 40px; height: 40px; padding: 0; border-radius: 3px; font-weight: 600; font-size: 14px; letter-spacing: -.01em; text-transform: lowercase;
+  color: #9aa6bd; background: #171b23; transition: color .15s, background .15s, transform .12s;
+}
+.server:hover { color: #fff; background: #222a38; }
+.server:active { transform: scale(.94); }
+.server.selected { color: #fff; background: #1d3a7a; }
+
+/* "new server": a plain + that opens into an input when clicked. No extra state needed. */
+.server-form { position: relative; width: 40px; height: 40px; flex: none; }
+.server-form input {
+  position: absolute; left: 0; top: 0; z-index: 5; width: 40px; height: 40px; box-sizing: border-box; padding: 0 12px;
+  border-radius: 3px; border: 1px dashed #3a4256; color: transparent; caret-color: transparent; cursor: pointer;
+  background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239aa6bd' stroke-width='1.8' stroke-linecap='round'%3E%3Cpath d='M12 5v14M5 12h14'/%3E%3C/svg%3E") center / 18px no-repeat;
+  transition: width .22s cubic-bezier(.2, .8, .2, 1), border-color .2s, background-color .2s;
+}
+.server-form input::placeholder { color: transparent; }
+.server-form input:hover { border-color: var(--sel); }
+.server-form input:focus {
+  width: 220px; border-style: solid; border-color: var(--sel); background-image: none; background-color: #0d0f12; color: #f2f4f7;
+  caret-color: #f2f4f7; cursor: text; outline: none; box-shadow: 0 12px 30px -10px rgba(0, 0, 0, .7);
+}
+.server-form input:focus::placeholder { color: #7d889c; }
+.server-form button, .channel-form button { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); padding: 0; } /* Enter submits; the button stays for keyboards */
+
+/* ---------- 2. Channels: a list, nothing else ---------- */
+.channels { display: flex; flex-direction: column; min-width: 0; background: var(--surface); border-right: 1px solid var(--line); }
+.channels-title { margin: 0; padding: 0 20px; height: 64px; display: flex; align-items: center; flex: none; font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+.channels ul { flex: 1; overflow-y: auto; padding: 4px 10px; display: flex; flex-direction: column; gap: 1px; }
+.channel {
+  position: relative; width: 100%; padding: 8px 10px 8px 26px; border-radius: 6px; text-align: left; font-size: 14.5px; font-weight: 450;
+  background: none; color: var(--muted); transition: background .15s, color .15s;
+}
+.channel:hover { background: var(--hover); color: var(--fg); }
+.channel.active { color: var(--fg); font-weight: 600; }
+.channel.active::before {                      /* the Myttup dot marks where you are */
+  content: ""; position: absolute; left: 10px; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #9cc2ff, var(--accent) 55%, #1d4ed8); box-shadow: 0 0 10px 1px rgba(61, 124, 255, .55);
+  animation: grab .3s ease;
+}
+
+.channel-form { position: relative; padding: 8px 12px 12px; }
+.channel-form input {
+  width: 100%; box-sizing: border-box; height: 36px; padding: 0 12px; border-radius: 6px; color: var(--fg); font-size: 14px;
+  background: transparent; border: 1px dashed var(--line); transition: border-color .2s, background .2s;
+}
+.channel-form input::placeholder { color: var(--muted); }
+.channel-form input:focus { outline: none; border-style: solid; border-color: var(--accent); background: var(--bg); }
+
+.me { display: flex; align-items: center; gap: 10px; flex: none; padding: 14px 20px; border-top: 1px solid var(--line); font-size: 14px; font-weight: 500; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: radial-gradient(circle at 32% 28%, #9cc2ff, var(--accent) 55%, #1d4ed8); box-shadow: 0 0 12px 1px rgba(61, 124, 255, .5); }
+
+/* ---------- 3. The conversation: type on a floor of dots ---------- */
+.chat {
+  position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0;
+  background-image: radial-gradient(color-mix(in srgb, var(--fg) 13%, transparent) 1px, transparent 1.3px);
+  background-size: 26px 26px; background-position: 13px 13px;
+}
+.chat::before {                                 /* fades the dots out toward the middle so text stays easy to read */
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(90% 70% at 50% 45%, var(--bg) 35%, transparent 100%);
+}
+.chat > * { position: relative; }
+.chat-header { display: flex; align-items: baseline; gap: 16px; flex: none; padding: 20px 32px 14px; }
+.chat-header h1 { margin: 0; padding: 4px 12px; font-size: 26px; line-height: 1.15; font-weight: 600; letter-spacing: -.04em; }
+.chat-header h1.muted { color: var(--muted); }
+.where { color: var(--muted); font-size: 14px; }
+
+.messages { flex: 1; overflow-y: auto; padding: 18px 32px; display: flex; flex-direction: column; gap: 2px; }
+.message { display: grid; grid-template-columns: 112px minmax(0, 68ch); gap: 18px; padding: 7px 0; animation: arrive .22s ease both; }
+.message strong { text-align: right; font-size: 13.5px; font-weight: 600; letter-spacing: -.005em; padding-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.message p { margin: 0; font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
+.message.mine strong { color: var(--accent); }
+@keyframes arrive { from { opacity: 0; transform: translateY(5px); } }
+.empty { margin: auto; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; color: var(--muted); }
+.empty b { font-size: 40px; font-weight: 600; letter-spacing: -.045em; line-height: 1.05; color: var(--fg); opacity: .85; }
+
+/* The composer is the one glass surface, floating over the dots */
+.composer {
+  display: flex; align-items: center; gap: 8px; flex: none; margin: 8px 32px 24px; padding: 7px 7px 7px 18px; border-radius: 16px;
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  border: 1px solid var(--line);
+  box-shadow: 0 18px 40px -22px rgba(13, 15, 18, .45);
+  -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%);
+  transition: border-color .2s, box-shadow .2s;
+}
+.composer:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--focus), 0 18px 40px -22px rgba(13, 15, 18, .45); }
+.composer input { flex: 1; min-width: 0; height: 40px; padding: 0; color: var(--fg); background: none; border: 0; font-size: 15px; }
+.composer input:focus-visible { outline: none; }
+.composer input::placeholder { color: var(--muted); }
+.composer button {
+  flex: none; width: 40px; height: 40px; display: grid; place-items: center; padding: 0; border-radius: 10px; color: #fff; background: var(--accent);
+  transition: transform .12s, filter .15s, opacity .2s;
+}
+.composer button svg { width: 18px; height: 18px; transition: transform .2s; }
+.composer button:hover { filter: brightness(1.1); }
+.composer button:hover svg { transform: translate(2px, -2px); }
+.composer button:active { transform: scale(.93); }
+.composer:has(input:placeholder-shown) button { opacity: .4; }   /* looks asleep until you type */
+
+/* ---------- Small screens: channels become a strip on top, names stack over text ---------- */
+@media (max-width: 720px) {
+  .app { grid-template-columns: 60px 1fr; grid-template-rows: auto 1fr; }
+  .servers { grid-row: 1 / 3; }
+  .server-form input:focus { width: 190px; }
+  .channels { grid-column: 2; grid-row: 1; flex-direction: row; align-items: center; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+  .channels-title, .me { display: none; }
+  .channels ul { flex-direction: row; overflow: visible; padding: 8px; flex: none; }
+  .channel { width: auto; white-space: nowrap; }
+  .channel-form { flex: none; padding: 8px; }
+  .chat { grid-column: 2; grid-row: 2; }
+  .chat-header { padding: 14px 16px 8px; gap: 10px; }
+  .chat-header h1 { font-size: 22px; }
+  .messages { padding: 10px 16px; }
+  .message { grid-template-columns: 1fr; gap: 0; }
+  .message strong { text-align: left; }
+  .composer { margin: 6px 12px 14px; }
+}
+@media (prefers-reduced-motion: reduce) { .message, .selected::before, .selected::after, .channel.active::before { animation: none; } .server, .server-form input, .composer button svg { transition: none; } }
